@@ -1,0 +1,95 @@
+server:
+  port: 8081
+spring:
+  application:
+    name: USER-SERVICE
+  config:
+    import: optional:configserver:http://localhost:8085
+  datasource:
+    url: jdbc:mysql://localhost:3306/microservices
+    username: root
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+
+#eureka:
+#  client:
+#    fetch-registry: true
+#    register-with-eureka: true
+#    service-url:
+#      default zone: http://localhost:8761/eureka
+#
+#
+ # instance:
+  #  prefer-ip-address: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://dev-64837756.okta.com/oauth2/default
+      client:
+        registration:
+          my-internal-client:
+            provider: okta
+            authorization-grant-type: Client Credentials
+            scope: internal
+            client-id: 0oa94qol946iu2bXi5d7
+            client-secret: _PKGTKUuOHNvpNlstQu3rG7Pn0ah1OKPkCd6zPk-
+        provider:
+          okta:
+            issuer-uri: https://dev-64837756.okta.com/oauth2/default
+
+
+
+management:
+  health:
+    circuitbreakers:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      ratingHotelBreaker:
+        register-health-indicator: true
+        event-consumer-buffer-size: 10
+        failure-rate-threshold: 50
+        minimum-number-of-calls: 5
+        automatic-transition-from-open-to-half-open-enabled: true
+        wait-duration-in-open-state: 6s
+        permitted-number-of-calls-in-half-open-state: 3
+        sliding-window-size: 10
+        sliding-window-type: COUNT_BASED
+  retry:
+    instances:
+      ratingHotelService:
+        max-attempts: 3
+        wait-duration: 5s
+  ratelimiter:
+    instances:
+      userRateLimiter:
+        limit-refresh-period: 4s
+        limit-for-period: 4
+        timeout-duration: 0s
+
+okta:
+  oauth2:
+    issuer: https://dev-64837756.okta.com/oauth2/default
+    audience: api://default
+
+
+
+
